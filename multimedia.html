@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Song with Custom Timestamp</title>
+    <style>
+        #controls { display: none; }
+        .sticker {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
+            text-align: center;
+            background-size: cover;
+            background-position: center;
+            width: 200px;
+            height: 300px;
+            color: white;
+            position: relative;
+            cursor: pointer;
+        }
+        .sticker-content {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="song-query" placeholder="Enter song name" onkeypress="handleKeyPress(event)">
+    <button onclick="searchSong()">Search</button>
+    
+    <div id="controls">
+        <div>
+            <label for="start-time">Start Time (seconds): </label>
+            <input type="range" id="start-time" min="0" max="300" value="0" oninput="updateStartTimeDisplay(this.value)">
+            <span id="start-time-display">0</span>
+        </div>
+        <div>
+            <label for="end-time">End Time (seconds): </label>
+            <input type="range" id="end-time" min="0" max="300" value="10" oninput="updateEndTimeDisplay(this.value)">
+            <span id="end-time-display">10</span>
+        </div>
+        <button onclick="createSticker()">Create Sticker</button>
+    </div>
+
+    <div id="stickers"></div>
+
+    <audio id="audioPlayer" controls style="display: none;"></audio>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        let currentSong = {};
+let songList = [];
+
+async function fetchSongUrl(songQuery) {
+    const response = await axios.get(`https://jio-savaan-private.vercel.app/api/search/songs?query=${songQuery}`);
+    const data = response.data.data;
+    if (data && data.results && data.results.length > 0) {
+        songList = data.results;
+        if (Array.isArray(songList) && songList.length > 0) {
+            return songList[0];
+        }
+    }
+    throw new Error('Song not found');
+}
+
+function updateStartTimeDisplay(value) {
+    document.getElementById('start-time-display').innerText = value;
+}
+
+function updateEndTimeDisplay(value) {
+    document.getElementById('end-time-display').innerText = value;
+}
+
+async function searchSong() {
+    const songQuery = document.getElementById('song-query').value;
+
+    try {
+        currentSong = await fetchSongUrl(songQuery);
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.src = currentSong.downloadUrl[0].url;
+        audioPlayer.load();
+
+        // Set max range to song duration once metadata is loaded
+        audioPlayer.onloadedmetadata = function() {
+            const maxTime = Math.floor(audioPlayer.duration);
+            document.getElementById('start-time').max = maxTime;
+            document.getElementById('end-time').max = maxTime;
+        };
+
+        document.getElementById('controls').style.display = 'block';
+    } catch (error) {
+        console.error('Error fetching the song:', error);
+    }
+}
+
+function handleKeyPress(event) {
+    if (event.key === 'Enter') {
+        searchSong();
+    }
+}
+
+function playSong(startTime, endTime, songUrl) {
+    const audioPlayer = document.getElementById('audioPlayer');
+    audioPlayer.src = songUrl;
+    audioPlayer.currentTime = startTime;
+    audioPlayer.play();
+
+    audioPlayer.ontimeupdate = () => {
+        if (audioPlayer.currentTime >= endTime) {
+            audioPlayer.pause();
+        }
+    };
+}
+
+function createSticker() {
+    const startTime = parseFloat(document.getElementById('start-time').value);
+    const endTime = parseFloat(document.getElementById('end-time').value);
+    const stickers = document.getElementById('stickers');
+
+    if (endTime <= startTime) {
+        alert('End time must be greater than start time');
+        return;
+    }
+
+    const sticker = document.createElement('div');
+    sticker.className = 'sticker';
+    sticker.style.backgroundImage = `url(${currentSong.image[0].url})`;
+    sticker.onclick = () => playSong(startTime, endTime, currentSong.downloadUrl[0].url);
+
+    const stickerContent = document.createElement('div');
+    stickerContent.className = 'sticker-content';
+
+    const songTitle = document.createElement('p');
+    songTitle.innerText = `Title: ${currentSong.title}`;
+    stickerContent.appendChild(songTitle);
+
+    const songArtist = document.createElement('p');
+    songArtist.innerText = `Artist: ${currentSong.more_info.singers}`;
+    stickerContent.appendChild(songArtist);
+
+    const songStartTime = document.createElement('p');
+    songStartTime.innerText = `Start: ${startTime}s`;
+    stickerContent.appendChild(songStartTime);
+
+    const songEndTime = document.createElement('p');
+    songEndTime.innerText = `End: ${endTime}s`;
+    stickerContent.appendChild(songEndTime);
+
+    sticker.appendChild(stickerContent);
+    stickers.appendChild(sticker);
+}
+
+    </script>
+</body>
+</html>
