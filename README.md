@@ -3,7 +3,7 @@
 
 Welcome to Hebri's Assistant, a collection of tools designed to assist you in various tasks ranging from checking the weather to analyzing SEO metrics. This project aims to provide a convenient way to access different functionalities through APIs and custom visualizations.
 
-![Hebri's Assistant](Screenshot 2024-07-25 130555.png)
+![Hebri's Assistant](movie.png)
 
 ## Features
 
