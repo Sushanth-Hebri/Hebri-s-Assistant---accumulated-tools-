@@ -1,5 +1,5 @@
 
-# Hebri's Assistant - Accumulated Tools
+# [Hebri's Assistant - Accumulated Tools](https://sushanth-hebri.github.io/Hebri-s-Assistant---accumulated-tools-/)
 
 Welcome to Hebri's Assistant, a collection of tools designed to assist you in various tasks ranging from checking the weather to analyzing SEO metrics. This project aims to provide a convenient way to access different functionalities through APIs and custom visualizations.
 
@@ -33,6 +33,6 @@ Create custom visualizations for songs based on user preferences or specific met
 
 ## Getting Started
 
-To get started with Hebri's Assistant, try now 
+To get started with Hebri's Assistant, [try now](https://sushanth-hebri.github.io/Hebri-s-Assistant---accumulated-tools-/)
 
 
